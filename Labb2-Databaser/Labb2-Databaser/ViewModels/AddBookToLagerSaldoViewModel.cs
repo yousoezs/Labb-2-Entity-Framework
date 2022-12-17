@@ -12,9 +12,9 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
 {
     #region Fields And Properties
     private readonly NavigationManager _navigationManager;
-    private ObservableCollection<LagerSaldo> _showBooksInLagerSaldo;
+    private ObservableCollection<Böcker> _showBooksInLagerSaldo;
 
-    public ObservableCollection<LagerSaldo> ShowAllBooks
+    public ObservableCollection<Böcker> ShowAllBooks
     {
         get
         {
@@ -43,9 +43,9 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     {
         using (var context = new BokhandelDbContext())
         {
-            ShowAllBooks = new ObservableCollection<LagerSaldo>();
+            ShowAllBooks = new ObservableCollection<Böcker>();
 
-            foreach (var allBooks in context.LagerSaldos.Include(ls => ls.IsbnNavigation))
+            foreach (var allBooks in context.Böckers.Include(b => b.Författar))
             {
                 ShowAllBooks.Add(allBooks);
             }

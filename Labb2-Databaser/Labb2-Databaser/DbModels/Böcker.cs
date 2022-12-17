@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Labb2_Databaser.DbModels;
 
@@ -15,6 +16,8 @@ public partial class Böcker
     public int? Pris { get; set; }
 
     public int? Sidor { get; set; }
+
+    public DateTime UtgivningsDatum { get; set; }
 
     public virtual Författare? Författar { get; set; }
 
