@@ -28,9 +28,7 @@
             <TextBlock Text="Författare Lastname" />
             <TextBox Text="{Binding AddFörfattareEfterNamn, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock Text="Författare Birthdate" />
-            <ComboBox Text="{Binding AddFörfattareFödelseDatum, UpdateSourceTrigger=PropertyChanged}">
-                <DatePicker />
-            </ComboBox>
+            <DatePicker SelectedDate="{Binding AddFörfattareFödelseDatum, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
         <Button
             Grid.Row="3"
@@ -51,6 +49,13 @@
             Height="80"
             Command="{Binding RemoveFörfattare}"
             Content="Remove Författare" />
+        <Button
+            Grid.Row="2"
+            Grid.Column="2"
+            Width="120"
+            Height="80"
+            Command="{Binding UpdateFörfattareToDb, UpdateSourceTrigger=PropertyChanged}"
+            Content="Edit Författare" />
         <ListView
             Grid.ColumnSpan="2"
             ItemsSource="{Binding ShowAllFörfattare}"

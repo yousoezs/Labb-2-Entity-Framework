@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Documents;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +20,6 @@ public class AddFörfattareViewModel : ObservableObject
     private string _addFörfattareEfterNamn;
     private DateTime _addFörfattareFödelseDatum;
     private Författare _selectedFörfattare;
-
     public Författare SelectedFörfattare
     {
         get
@@ -82,6 +82,7 @@ public class AddFörfattareViewModel : ObservableObject
     public IRelayCommand NavigateToBokSamling { get; }
     public IRelayCommand AddNewRowFörfattareDb { get; }
     public IRelayCommand RemoveFörfattare { get; }
+    public IRelayCommand UpdateFörfattareToDb { get; }
     #endregion
     public AddFörfattareViewModel(NavigationManager navigationManager)
     {
@@ -99,6 +100,12 @@ public class AddFörfattareViewModel : ObservableObject
         {
             var selectedFörfattare = GetFörfattareFromDb();
             RemoveFörfattareFromDb(selectedFörfattare);
+        });
+
+        UpdateFörfattareToDb = new RelayCommand(() =>
+        {
+            var selectedFörfattare = GetFörfattareFromDb();
+            UpdateFörfattareTable(selectedFörfattare);
         });
 
         ShowFörfattareInDb();
@@ -154,6 +161,26 @@ public class AddFörfattareViewModel : ObservableObject
                 .ToList();
 
             return selectedFörfattare;
+        }
+    }
+
+    private void UpdateFörfattareTable(List<Författare> selectedFörfattareToUpdate)
+    {
+
+
+
+        using (var context = new BokhandelDbContext())
+        {
+            var updatedFörfattare = context.Författares
+                .First(f => f.Id
+                    .Equals(SelectedFörfattare.Id));
+
+            updatedFörfattare.Förnamn = AddFörfattareNamn;
+            updatedFörfattare.Efternamn = AddFörfattareEfterNamn;
+            updatedFörfattare.Födelsedatum = AddFörfattareFödelseDatum;
+
+            context.Författares.Update(updatedFörfattare);
+            context.SaveChanges();
         }
     }
     #endregion
