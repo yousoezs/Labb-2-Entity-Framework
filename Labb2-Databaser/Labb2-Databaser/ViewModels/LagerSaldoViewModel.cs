@@ -5,7 +5,6 @@ using System.Runtime.InteropServices.ComTypes;
 using Azure.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Labb2_Databaser.DataModels;
 using Labb2_Databaser.DbModels;
 using Labb2_Databaser.Managers;
 using Microsoft.EntityFrameworkCore;

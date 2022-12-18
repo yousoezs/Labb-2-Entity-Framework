@@ -22,15 +22,31 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.RowSpan="2" Grid.Column="3">
+        <StackPanel Grid.RowSpan="4" Grid.Column="3">
             <TextBlock Text="Titel till ny bok" />
-            <TextBox />
-            <TextBlock Text="Författare till bok" />
-            <ComboBox />
+            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="Författare för bok" />
+            <ComboBox
+                DisplayMemberPath="Förnamn"
+                ItemsSource="{Binding ShowAllFörfattare, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SelectedFörfattare, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock Text="Antal Sidor på bok" />
-            <TextBox />
+            <TextBox Text="{Binding BookPages, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock Text="Pris för bok i SEK" />
-            <TextBox />
+            <TextBox Text="{Binding BookCost, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="Utgivningsdatum" />
+            <DatePicker />
+            <TextBlock Text="ISBN" />
+            <TextBox Text="{Binding BookIsbn, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="Språk på bok" />
+            <TextBox Text="{Binding AddLanguageToBook, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="Antal Böcker till lagersaldo" />
+            <TextBox Text="{Binding AddNewBookToLagerSaldo}" />
+            <TextBlock Text="Välj Butik" />
+            <ComboBox
+                DisplayMemberPath="Butik"
+                ItemsSource="{Binding ShowStores, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SelectedStore}" />
         </StackPanel>
 
         <ListView Grid.ColumnSpan="2" ItemsSource="{Binding ShowAllBooks, UpdateSourceTrigger=PropertyChanged}">
@@ -50,5 +66,12 @@
             Height="80"
             Command="{Binding NavigateToBokSamling}"
             Content="Back" />
+        <Button
+            Grid.Row="3"
+            Grid.Column="2"
+            Width="120"
+            Height="80"
+            Command="{Binding AddBookToBöckerTable}"
+            Content="Add Book" />
     </Grid>
 </UserControl>

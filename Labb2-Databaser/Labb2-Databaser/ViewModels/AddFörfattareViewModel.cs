@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Documents;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Labb2_Databaser.DbModels;
 using Labb2_Databaser.Managers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Labb2_Databaser.ViewModels;
 
@@ -98,13 +100,13 @@ public class AddFörfattareViewModel : ObservableObject
 
         RemoveFörfattare = new RelayCommand(() =>
         {
-            var selectedFörfattare = GetFörfattareFromDb();
+            var selectedFörfattare = GetSelectedFörfattareFromDb();
             RemoveFörfattareFromDb(selectedFörfattare);
         });
 
         UpdateFörfattareToDb = new RelayCommand(() =>
         {
-            var selectedFörfattare = GetFörfattareFromDb();
+            var selectedFörfattare = GetSelectedFörfattareFromDb();
             UpdateFörfattareTable(selectedFörfattare);
         });
 
@@ -126,13 +128,17 @@ public class AddFörfattareViewModel : ObservableObject
 
     private void AddFörfattareToDb()
     {
-        var författareCreateRow = new Författare();
-        författareCreateRow.Förnamn = AddFörfattareNamn;
-        författareCreateRow.Efternamn = AddFörfattareEfterNamn;
-        författareCreateRow.Födelsedatum = AddFörfattareFödelseDatum;
 
         using (var context = new BokhandelDbContext())
         {
+            var författareCreateRow = new Författare();
+
+            författareCreateRow.Id = context.Författares.Max(f => f.Id) + 1;
+
+            författareCreateRow.Förnamn = AddFörfattareNamn;
+            författareCreateRow.Efternamn = AddFörfattareEfterNamn;
+            författareCreateRow.Födelsedatum = AddFörfattareFödelseDatum;
+
             context.Författares.Add(författareCreateRow);
             context.SaveChanges();
         }
@@ -151,24 +157,21 @@ public class AddFörfattareViewModel : ObservableObject
         }
     }
 
-    private List<Författare> GetFörfattareFromDb()
+    private List<Författare> GetSelectedFörfattareFromDb()
     {
         using (var context = new BokhandelDbContext())
         {
-            var selectedFörfattare = context.Författares
+            var författare = context.Författares
                 .Where(f => f.Id
                     .Equals(SelectedFörfattare.Id))
                 .ToList();
 
-            return selectedFörfattare;
+            return författare;
         }
     }
 
     private void UpdateFörfattareTable(List<Författare> selectedFörfattareToUpdate)
     {
-
-
-
         using (var context = new BokhandelDbContext())
         {
             var updatedFörfattare = context.Författares
