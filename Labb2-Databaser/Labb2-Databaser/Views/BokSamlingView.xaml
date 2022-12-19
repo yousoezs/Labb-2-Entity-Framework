@@ -32,14 +32,14 @@
             Width="120"
             Height="80"
             Command="{Binding AddBookToLagerSaldoNavigation}"
-            Content="Add Book" />
+            Content="Bibliotek Vy" />
         <Button
             Grid.Row="2"
             Grid.Column="1"
             Width="120"
             Height="80"
             Command="{Binding AddFörfattareToDb}"
-            Content="Add Författare" />
+            Content="Författare Vyn" />
         <ListView
             Grid.RowSpan="2"
             Grid.ColumnSpan="2"

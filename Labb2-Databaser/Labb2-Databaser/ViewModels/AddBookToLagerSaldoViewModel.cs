@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Printing.IndexedProperties;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Labb2_Databaser.DbModels;
@@ -39,125 +40,62 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     public ObservableCollection<Butiker> ShowStores
     {
         get => _showStores;
-        set
-        {
-            SetProperty(ref _showStores, value);
-        }
+        set => SetProperty(ref _showStores, value);
     }
 
     public LagerSaldo AddNewBookToLagerSaldo
     {
-        get
-        {
-            return _bookToLagerSaldo;
-        }
-        set
-        {
-            SetProperty(ref _bookToLagerSaldo, value);
-        }
+        get => _bookToLagerSaldo;
+        set => SetProperty(ref _bookToLagerSaldo, value);
     }
     public string AddLanguageToBook
     {
-        get
-        {
-            return _bookLanguage;
-        }
-        set
-        {
-            SetProperty(ref _bookLanguage, value);
-        }
+        get => _bookLanguage;
+        set => SetProperty(ref _bookLanguage, value);
     }
 
     public Författare SelectedFörfattare
     {
-        get
-        {
-            return _selectedFörfattare;
-        }
-        set
-        {
-            SetProperty(ref _selectedFörfattare, value);
-        }
+        get => _selectedFörfattare;
+        set => SetProperty(ref _selectedFörfattare, value);
     }
     public string? BookIsbn
     {
-        get
-        {
-            return _bookIsbn;
-        }
-        set
-        {
-            SetProperty(ref _bookIsbn, value);
-        }
+        get => _bookIsbn;
+        set => SetProperty(ref _bookIsbn, value);
     }
     public DateTime BookReleased
     {
-        get
-        {
-            return _releaseDateBook;
-        }
-        set
-        {
-            SetProperty(ref _releaseDateBook, value);
-        }
+        get => _releaseDateBook;
+        set => SetProperty(ref _releaseDateBook, value);
     }
     public int BookCost
     {
-        get
-        {
-            return _bookCost;
-        }
-        set
-        {
-            SetProperty(ref _bookCost, value);
-        }
+        get => _bookCost;
+        set => SetProperty(ref _bookCost, value);
     }
     public int BookPages
     {
-        get
-        {
-            return _bookPages;
-        }
-        set
-        {
-            SetProperty(ref _bookPages, value);
-        }
+        get => _bookPages;
+        set => SetProperty(ref _bookPages, value);
     }
 
     public string Title
     {
-        get
-        {
-            return _bookTitle;
-        }
-        set
-        {
-            SetProperty(ref _bookTitle, value);
-        }
+        get => _bookTitle;
+        set => SetProperty(ref _bookTitle, value);
     }
 
     public ObservableCollection<Författare> ShowAllFörfattare
     {
-        get
-        {
-            return _showAllFörfattare;
-        }
-        set
-        {
-            SetProperty(ref _showAllFörfattare, value);
-        }
+        get => _showAllFörfattare;
+        set => SetProperty(ref _showAllFörfattare, value);
     }
 
     public ObservableCollection<Böcker> ShowAllBooks
     {
-        get
-        {
-            return _showBooksInLagerSaldo;
-        }
-        set
-        {
-            SetProperty(ref _showBooksInLagerSaldo, value);
-        }
+        get => _showBooksInLagerSaldo;
+        set => SetProperty(ref _showBooksInLagerSaldo, value);
     }
     #endregion
 
@@ -173,7 +111,7 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
             _navigationManager.CurrentViewModel = new BokSamlingViewModel(navigationManager));
 
         GetFörfattareFromDb();
-        ShowAllBooksInLagerSaldo();
+        ShowAllBooksInLagerSaldo(); 
         GetStoresFromDb();
 
         AddBookToBöckerTable = new RelayCommand(() =>
@@ -200,16 +138,17 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     {
         var createNewBookRow = new Böcker();
 
-        createNewBookRow.Titel = Title;
-        createNewBookRow.FörfattarId = SelectedFörfattare.Id;
-        createNewBookRow.Sidor = BookPages;
-        createNewBookRow.Pris = BookCost;
-        createNewBookRow.Isbn13 = BookIsbn;
-        createNewBookRow.UtgivningsDatum = BookReleased;
-        createNewBookRow.Språk = AddLanguageToBook;
 
         using (var context = new BokhandelDbContext())
         {
+            createNewBookRow.Titel = Title;
+            createNewBookRow.FörfattarId = SelectedFörfattare.Id;
+            createNewBookRow.Sidor = BookPages;
+            createNewBookRow.Pris = BookCost;
+            createNewBookRow.Isbn13 = BookIsbn;
+            createNewBookRow.UtgivningsDatum = BookReleased;
+            createNewBookRow.Språk = AddLanguageToBook;
+
             context.Böckers.Add(createNewBookRow);
             context.SaveChanges();
         }
@@ -233,6 +172,10 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
         {
             var storeId = context.Butikers
                 .FirstOrDefault(b => b.Id == SelectedStore.Id).Id;
+
+            var lagerSaldo = context.LagerSaldos
+                .First(ls => ls.ButikId
+                    .Equals(SelectedStore.Id));
         }
     }
 

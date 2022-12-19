@@ -17,26 +17,14 @@ public class BokSamlingViewModel : ObservableObject
 
     public ObservableCollection<Författare> ShowAllFörfattareFromDb
     {
-        get
-        {
-            return _showAllFörfattareFromDb;
-        }
-        set
-        {
-            SetProperty(ref _showAllFörfattareFromDb, value);
-        }
+        get => _showAllFörfattareFromDb;
+        set => SetProperty(ref _showAllFörfattareFromDb, value);
     }
 
     public ObservableCollection<LagerSaldo> BooksFromLagerSaldo
     {
-        get
-        {
-            return _booksFromLagerSaldo;
-        }
-        set
-        {
-            SetProperty(ref _booksFromLagerSaldo, value);
-        }
+        get => _booksFromLagerSaldo;
+        set => SetProperty(ref _booksFromLagerSaldo, value);
     }
 
     #endregion

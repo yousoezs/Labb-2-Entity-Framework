@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Documents;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,59 +25,29 @@ public class AddFörfattareViewModel : ObservableObject
     private Författare _selectedFörfattare;
     public Författare SelectedFörfattare
     {
-        get
-        {
-            return _selectedFörfattare;
-        }
-        set
-        {
-            SetProperty(ref _selectedFörfattare, value);
-        }
+        get => _selectedFörfattare;
+        set => SetProperty(ref _selectedFörfattare, value);
     }
     public DateTime AddFörfattareFödelseDatum
     {
-        get
-        {
-            return _addFörfattareFödelseDatum;
-        }
-        set
-        {
-            SetProperty(ref _addFörfattareFödelseDatum, value);
-        }
+        get => _addFörfattareFödelseDatum;
+        set => SetProperty(ref _addFörfattareFödelseDatum, value);
     }
     public string AddFörfattareEfterNamn
     {
-        get
-        {
-            return _addFörfattareEfterNamn;
-        }
-        set
-        {
-            SetProperty(ref _addFörfattareEfterNamn, value);
-        }
+        get => _addFörfattareEfterNamn;
+        set => SetProperty(ref _addFörfattareEfterNamn, value);
     }
 
     public string AddFörfattareNamn
     {
-        get
-        {
-            return _addFörfattareNamn;
-        }
-        set
-        {
-            SetProperty(ref _addFörfattareNamn, value);
-        }
+        get => _addFörfattareNamn;
+        set => SetProperty(ref _addFörfattareNamn, value);
     }
     public ObservableCollection<Författare> ShowAllFörfattare
     {
-        get
-        {
-            return _showAllFörfattare;
-        }
-        set
-        {
-            SetProperty(ref _showAllFörfattare, value);
-        }
+        get => _showAllFörfattare;
+        set => SetProperty(ref _showAllFörfattare, value);
     }
     #endregion
 
@@ -98,16 +69,16 @@ public class AddFörfattareViewModel : ObservableObject
             AddFörfattareToDb();
         });
 
-        RemoveFörfattare = new RelayCommand(() =>
+        RemoveFörfattare = new RelayCommand(async () =>
         {
-            var selectedFörfattare = GetSelectedFörfattareFromDb();
+            var selectedFörfattare = await GetSelectedFörfattareFromDb();
             RemoveFörfattareFromDb(selectedFörfattare);
         });
 
-        UpdateFörfattareToDb = new RelayCommand(() =>
+        UpdateFörfattareToDb = new RelayCommand(async () =>
         {
-            var selectedFörfattare = GetSelectedFörfattareFromDb();
-            UpdateFörfattareTable(selectedFörfattare);
+            var selectedFörfattare = await GetSelectedFörfattareFromDb();
+            await UpdateFörfattareTable(selectedFörfattare);
         });
 
         ShowFörfattareInDb();
@@ -157,25 +128,25 @@ public class AddFörfattareViewModel : ObservableObject
         }
     }
 
-    private List<Författare> GetSelectedFörfattareFromDb()
+    private async Task<List<Författare>> GetSelectedFörfattareFromDb()
     {
         using (var context = new BokhandelDbContext())
         {
-            var författare = context.Författares
+            var författare = await context.Författares
                 .Where(f => f.Id
                     .Equals(SelectedFörfattare.Id))
-                .ToList();
+                .ToListAsync();
 
             return författare;
         }
     }
 
-    private void UpdateFörfattareTable(List<Författare> selectedFörfattareToUpdate)
+    private async Task UpdateFörfattareTable(List<Författare> selectedFörfattareToUpdate)
     {
         using (var context = new BokhandelDbContext())
         {
-            var updatedFörfattare = context.Författares
-                .First(f => f.Id
+            var updatedFörfattare = await context.Författares
+                .FirstAsync(f => f.Id
                     .Equals(SelectedFörfattare.Id));
 
             updatedFörfattare.Förnamn = AddFörfattareNamn;
