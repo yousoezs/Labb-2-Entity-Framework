@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Printing.IndexedProperties;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Labb2_Databaser.DbModels;
@@ -17,10 +18,8 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     private readonly NavigationManager _navigationManager;
     private ObservableCollection<Böcker> _showBooksInLagerSaldo;
     private ObservableCollection<Författare> _showAllFörfattare;
+    private Böcker _selectedBook;
     private Författare _selectedFörfattare;
-    private LagerSaldo _bookToLagerSaldo;
-    private ObservableCollection<Butiker> _showStores;
-    private Butiker _selectedStore;
     private DateTime _releaseDateBook;
     private string _bookTitle;
     private int _bookPages;
@@ -28,25 +27,10 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     private string? _bookIsbn;
     private string _bookLanguage;
 
-    public Butiker SelectedStore
+    public Böcker SelectedBook
     {
-        get => _selectedStore;
-        set
-        {
-            SetProperty(ref _selectedStore, value);
-            GetSelectedStoreFromDb();
-        }
-    }
-    public ObservableCollection<Butiker> ShowStores
-    {
-        get => _showStores;
-        set => SetProperty(ref _showStores, value);
-    }
-
-    public LagerSaldo AddNewBookToLagerSaldo
-    {
-        get => _bookToLagerSaldo;
-        set => SetProperty(ref _bookToLagerSaldo, value);
+        get => _selectedBook;
+        set => SetProperty(ref _selectedBook, value);
     }
     public string AddLanguageToBook
     {
@@ -102,6 +86,7 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     #region IRelayCommands
     public IRelayCommand NavigateToBokSamling { get; }
     public IRelayCommand AddBookToBöckerTable { get; }
+    public IRelayCommand RemoveBookFromDb { get; }
     #endregion
     public AddBookToLagerSaldoViewModel(NavigationManager navigationManager)
     {
@@ -110,18 +95,23 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
         NavigateToBokSamling = new RelayCommand(() =>
             _navigationManager.CurrentViewModel = new BokSamlingViewModel(navigationManager));
 
+        BookReleased = DateTime.Today;
+
         GetFörfattareFromDb();
-        ShowAllBooksInLagerSaldo(); 
-        GetStoresFromDb();
+        ShowAllBooksInBöckerTable();
 
         AddBookToBöckerTable = new RelayCommand(() =>
         {
             CreateNewBookForBöckerTable();
         });
+        RemoveBookFromDb = new RelayCommand(() =>
+        {
+            DeleteBookRowFromBöckerTable(SelectedBook);
+        });
     }
 
     #region Methods
-    private void ShowAllBooksInLagerSaldo()
+    private void ShowAllBooksInBöckerTable()
     {
         using (var context = new BokhandelDbContext())
         {
@@ -131,7 +121,6 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
             {
                 ShowAllBooks.Add(allBooks);
             }
-
         }
     }
     private void CreateNewBookForBöckerTable()
@@ -166,25 +155,18 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
         }
     }
 
-    private void GetSelectedStoreFromDb()
+    private void DeleteBookRowFromBöckerTable(Böcker? selectedBook)
     {
         using (var context = new BokhandelDbContext())
         {
-            var storeId = context.Butikers
-                .FirstOrDefault(b => b.Id == SelectedStore.Id).Id;
+            var deleteRow = context.Böckers
+                .FirstOrDefault(b => b.Isbn13
+                    .Equals(SelectedBook.Isbn13));
 
-            var lagerSaldo = context.LagerSaldos
-                .First(ls => ls.ButikId
-                    .Equals(SelectedStore.Id));
-        }
-    }
+            selectedBook = deleteRow;
 
-    private void GetStoresFromDb()
-    {
-        using (var context = new BokhandelDbContext())
-        {
-            var showStores = context.Butikers.ToList();
-            ShowStores = new ObservableCollection<Butiker>(showStores);
+            context.Böckers.Remove(selectedBook);
+            context.SaveChanges();
         }
     }
     #endregion

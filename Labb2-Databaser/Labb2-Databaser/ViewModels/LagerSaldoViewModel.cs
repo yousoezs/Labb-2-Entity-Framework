@@ -18,14 +18,14 @@ public class LagerSaldoViewModel : ObservableObject
     #region Fields And Properties
     private readonly NavigationManager _navigationManager;
     private int? _updateValue;
-    private ObservableCollection<LagerSaldo> _allBooks;
+    private ObservableCollection<Böcker> _allBooks;
     private ObservableCollection<Butiker> _storesList;
     private ObservableCollection<LagerSaldo> _books;
     private Butiker _storeSelected;
     private Butiker _currentStore;
-    private LagerSaldo _book;
+    private Böcker _selectedBook;
 
-    public ObservableCollection<LagerSaldo> AllBooks
+    public ObservableCollection<Böcker> AllBooks
     {
         get => _allBooks;
         set => SetProperty(ref _allBooks, value);
@@ -35,10 +35,15 @@ public class LagerSaldoViewModel : ObservableObject
         get => _updateValue;
         set => SetProperty(ref _updateValue, value);
     }
-    public LagerSaldo SelectedBook
+    public Böcker SelectedBook
     {
-        get => _book;
-        set => SetProperty(ref _book, value);
+        get => _selectedBook;
+        set
+        {
+            SetProperty(ref _selectedBook, value);
+            UpdateQuantity.NotifyCanExecuteChanged();
+            RemoveBookFromLagerSaldo.NotifyCanExecuteChanged();
+        }
     }
     public Butiker CurrentBookStore
     {
@@ -83,11 +88,14 @@ public class LagerSaldoViewModel : ObservableObject
 
         NavigateBack = new RelayCommand(() =>
             _navigationManager.CurrentViewModel = new MainMenuViewModel(navigationManager));
+        StoresList = new ObservableCollection<Butiker>();
+        Books = new ObservableCollection<LagerSaldo>();
+        AllBooks = new ObservableCollection<Böcker>();
+
         ShowAllBooks();
         ShowListedCurrencies();
 
-
-        UpdateQuantity = new RelayCommand( async () =>
+        UpdateQuantity = new RelayCommand(async () =>
         {
             var book = await GetBookFromDatabase();
             var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
@@ -102,44 +110,52 @@ public class LagerSaldoViewModel : ObservableObject
             {
                 CreateRowForLagerSaldo();
             }
-        });
+        }, () => SelectedBook != null);
 
         RemoveBookFromLagerSaldo = new RelayCommand(async () =>
         {
             var book = await GetBookFromDatabase();
             var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
             DeleteRowFromLagerSaldo(lagerSaldosInSelectedStore, book.Isbn13);
-        });
+        }, () => SelectedBook != null);
     }
 
     #region Methods
     private async Task ShowListedCurrencies()
     {
-        using (var context = new BokhandelDbContext())
+        StoresList.Clear();
+        await using (var context = new BokhandelDbContext())
         {
             var store = await context.Butikers.ToListAsync();
-            StoresList = new ObservableCollection<Butiker>(store);
+            foreach (var butiker in store)
+            {
+                StoresList.Add(butiker);
+            }
         }
     }
     private async Task ShowStoreBalance()
     {
-        using (var context = new BokhandelDbContext())
+        Books.Clear();
+        await using (var context = new BokhandelDbContext())
         {
             var lagerSaldo = await context.LagerSaldos
                 .Include(b => b.IsbnNavigation)
                 .Where(l => l.ButikId.Equals(StoreSelected.Id))
                 .ToListAsync();
-            Books = new ObservableCollection<LagerSaldo>(lagerSaldo);
+
+            foreach (var saldo in lagerSaldo)
+            {
+                Books.Add(saldo);
+            }
         }
     }
 
     private async Task ShowAllBooks()
     {
-        using (var context = new BokhandelDbContext())
+        AllBooks.Clear();
+        await using (var context = new BokhandelDbContext())
         {
-            AllBooks = new ObservableCollection<LagerSaldo>();
-            var books = await context.LagerSaldos
-                .Include(l => l.IsbnNavigation)
+            var books = await context.Böckers
                 .ToListAsync();
 
             foreach (var book in books)
@@ -155,7 +171,8 @@ public class LagerSaldoViewModel : ObservableObject
         {
             var selectedBook = await context.Böckers
                 .FirstOrDefaultAsync(b => b.Isbn13
-                    .Equals(SelectedBook.Isbn));
+                    .Equals(SelectedBook.Isbn13));
+
             return selectedBook;
         }
     }
@@ -168,6 +185,7 @@ public class LagerSaldoViewModel : ObservableObject
                 .Where(l => l.ButikId
                     .Equals(CurrentBookStore.Id))
                 .ToListAsync();
+
             return selectLagerSaldo;
         }
     }
@@ -178,15 +196,15 @@ public class LagerSaldoViewModel : ObservableObject
             .FirstOrDefault(l => l.Isbn
                 .Equals(isbn13));
 
-        using (var context = new BokhandelDbContext())
+        await using (var context = new BokhandelDbContext())
         {
-            var lagerSaldoDb = await context.LagerSaldos.FirstAsync(ls =>
+            var lagerSaldoDb = await context.LagerSaldos.FirstOrDefaultAsync(ls =>
                 ls.Isbn == lagerSaldoToUpdate.Isbn && ls.ButikId == lagerSaldoToUpdate.ButikId);
 
             lagerSaldoDb.Antal += UpdateValue;
 
             context.LagerSaldos.Update(lagerSaldoDb);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 
@@ -194,7 +212,7 @@ public class LagerSaldoViewModel : ObservableObject
     {
         var lagerSaldoCreateRow = new LagerSaldo();
 
-        lagerSaldoCreateRow.Isbn = SelectedBook.Isbn;
+        lagerSaldoCreateRow.Isbn = SelectedBook.Isbn13;
         lagerSaldoCreateRow.ButikId = CurrentBookStore.Id;
         lagerSaldoCreateRow.Antal = UpdateValue;
 
@@ -213,6 +231,8 @@ public class LagerSaldoViewModel : ObservableObject
 
         using (var context = new BokhandelDbContext())
         {
+            if (lagerSaldoToDelete is null) return;
+
             var lagerSaldoDb = context.LagerSaldos.First(ls => ls.Isbn
                 .Equals(lagerSaldoToDelete.Isbn) && ls.ButikId
                 .Equals(lagerSaldoToDelete.ButikId));

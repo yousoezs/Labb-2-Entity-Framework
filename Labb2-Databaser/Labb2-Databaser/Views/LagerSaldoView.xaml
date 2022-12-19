@@ -21,17 +21,21 @@
         </Grid.ColumnDefinitions>
 
         <ListView
-            x:Name="Butik"
             Grid.RowSpan="1"
-            DisplayMemberPath="Butik"
             ItemsSource="{Binding StoresList}"
             SelectedItem="{Binding StoreSelected, UpdateSourceTrigger=PropertyChanged}"
-            SelectedValue="{Binding CurrentBookStore, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+            SelectedValue="{Binding CurrentBookStore, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Butik, UpdateSourceTrigger=PropertyChanged}" Header="Butiker" />
+                </GridView>
+            </ListView.View>
+        </ListView>
         <ListView
             Grid.Column="1"
             Grid.ColumnSpan="2"
-            ItemsSource="{Binding Books, UpdateSourceTrigger=PropertyChanged}"
-            SelectedItem="{Binding SelectedBook, UpdateSourceTrigger=PropertyChanged}">
+            IsEnabled="False"
+            ItemsSource="{Binding Books, UpdateSourceTrigger=PropertyChanged}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding IsbnNavigation.Titel, UpdateSourceTrigger=PropertyChanged}" Header="BokTitel" />
@@ -46,7 +50,7 @@
             SelectedItem="{Binding SelectedBook, UpdateSourceTrigger=PropertyChanged}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding IsbnNavigation.Titel, UpdateSourceTrigger=PropertyChanged}" Header="Titlar" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Titel, UpdateSourceTrigger=PropertyChanged}" Header="Boksamling" />
                 </GridView>
             </ListView.View>
 

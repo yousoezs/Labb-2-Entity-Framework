@@ -47,11 +47,11 @@ public class BokSamlingViewModel : ObservableObject
         AddBookToLagerSaldoNavigation = new RelayCommand(() =>
             _navigationManager.CurrentViewModel = new AddBookToLagerSaldoViewModel(navigationManager));
 
-        ShowBooksFromLagerSaldo();
+        ShowBooksFromBöcker();
         ShowFörfattareFromDb();
     }
     #region Methods
-    private void ShowBooksFromLagerSaldo()
+    private void ShowBooksFromBöcker()
     {
         using (var context = new BokhandelDbContext())
         {

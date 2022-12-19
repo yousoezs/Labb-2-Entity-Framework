@@ -64,6 +64,8 @@ public class AddFörfattareViewModel : ObservableObject
         NavigateToBokSamling = new RelayCommand(() =>
             _navigationManager.CurrentViewModel = new BokSamlingViewModel(navigationManager));
 
+        AddFörfattareFödelseDatum = DateTime.Today;
+
         AddNewRowFörfattareDb = new RelayCommand(() =>
         {
             AddFörfattareToDb();
