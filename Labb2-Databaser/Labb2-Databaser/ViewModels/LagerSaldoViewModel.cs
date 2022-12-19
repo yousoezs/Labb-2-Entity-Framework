@@ -19,7 +19,7 @@ public class LagerSaldoViewModel : ObservableObject
     private readonly NavigationManager _navigationManager;
     private int? _updateValue;
     private ObservableCollection<Böcker> _allBooks;
-    private ObservableCollection<Butiker> _storesList;
+    private ObservableCollection<Butiker> _storesList = new ObservableCollection<Butiker>();
     private ObservableCollection<LagerSaldo> _books;
     private Butiker _storeSelected;
     private Butiker _currentStore;
@@ -88,36 +88,17 @@ public class LagerSaldoViewModel : ObservableObject
 
         NavigateBack = new RelayCommand(() =>
             _navigationManager.CurrentViewModel = new MainMenuViewModel(navigationManager));
+
         StoresList = new ObservableCollection<Butiker>();
         Books = new ObservableCollection<LagerSaldo>();
         AllBooks = new ObservableCollection<Böcker>();
-
+        
         ShowAllBooks();
         ShowListedCurrencies();
 
-        UpdateQuantity = new RelayCommand(async () =>
-        {
-            var book = await GetBookFromDatabase();
-            var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
-            bool bookExists = lagerSaldosInSelectedStore.Exists(bs => bs.Isbn == book.Isbn13);
+        UpdateQuantity = new AsyncRelayCommand(UpdateQuantities, () => SelectedBook != null);
 
-            if (bookExists)
-            {
-                UpdateLagerSaldoQuantity(lagerSaldosInSelectedStore, book.Isbn13);
-            }
-
-            if (!bookExists)
-            {
-                CreateRowForLagerSaldo();
-            }
-        }, () => SelectedBook != null);
-
-        RemoveBookFromLagerSaldo = new RelayCommand(async () =>
-        {
-            var book = await GetBookFromDatabase();
-            var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
-            DeleteRowFromLagerSaldo(lagerSaldosInSelectedStore, book.Isbn13);
-        }, () => SelectedBook != null);
+        RemoveBookFromLagerSaldo = new AsyncRelayCommand(RemoveBookFromLagerSaldoTable, () => SelectedBook != null);
     }
 
     #region Methods
@@ -240,6 +221,30 @@ public class LagerSaldoViewModel : ObservableObject
             context.LagerSaldos.Remove(lagerSaldoDb);
             context.SaveChanges();
         }
+    }
+
+    private async Task UpdateQuantities()
+    {
+        var book = await GetBookFromDatabase();
+        var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
+        bool bookExists = lagerSaldosInSelectedStore.Exists(bs => bs.Isbn == book.Isbn13);
+
+        if (bookExists)
+        {
+            UpdateLagerSaldoQuantity(lagerSaldosInSelectedStore, book.Isbn13);
+        }
+
+        if (!bookExists)
+        {
+            CreateRowForLagerSaldo();
+        }
+    }
+
+    private async Task RemoveBookFromLagerSaldoTable()
+    {
+        var book = await GetBookFromDatabase();
+        var lagerSaldosInSelectedStore = await GetLagerSaldosForSelectedStoreFromDatabase();
+        DeleteRowFromLagerSaldo(lagerSaldosInSelectedStore, book.Isbn13);
     }
     #endregion
 }

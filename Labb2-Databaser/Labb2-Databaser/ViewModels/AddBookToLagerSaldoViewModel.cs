@@ -80,6 +80,7 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     {
         get => _showBooksInLagerSaldo;
         set => SetProperty(ref _showBooksInLagerSaldo, value);
+        
     }
     #endregion
 
@@ -87,6 +88,7 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     public IRelayCommand NavigateToBokSamling { get; }
     public IRelayCommand AddBookToBöckerTable { get; }
     public IRelayCommand RemoveBookFromDb { get; }
+    public IRelayCommand UpdateBöckerTableRow { get; }
     #endregion
     public AddBookToLagerSaldoViewModel(NavigationManager navigationManager)
     {
@@ -104,9 +106,15 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
         {
             CreateNewBookForBöckerTable();
         });
+
         RemoveBookFromDb = new RelayCommand(() =>
         {
             DeleteBookRowFromBöckerTable(SelectedBook);
+        });
+
+        UpdateBöckerTableRow = new RelayCommand(() =>
+        {
+            UpdateBookRowInBöckerTable(SelectedBook);
         });
     }
 
@@ -126,7 +134,6 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
     private void CreateNewBookForBöckerTable()
     {
         var createNewBookRow = new Böcker();
-
 
         using (var context = new BokhandelDbContext())
         {
@@ -166,6 +173,28 @@ public class AddBookToLagerSaldoViewModel : ObservableObject
             selectedBook = deleteRow;
 
             context.Böckers.Remove(selectedBook);
+            context.SaveChanges();
+        }
+    }
+
+    private void UpdateBookRowInBöckerTable(Böcker? selectedBook)
+    {
+        using (var context = new BokhandelDbContext())
+        {
+            var updateRow = selectedBook;
+
+            updateRow = context.Böckers
+                .FirstOrDefault(b => b.Isbn13
+                    .Equals(SelectedBook.Isbn13));
+
+            updateRow.Titel = Title;
+            updateRow.FörfattarId = SelectedFörfattare.Id;
+            updateRow.Pris = BookCost;
+            updateRow.Språk = _bookLanguage;
+            updateRow.UtgivningsDatum = BookReleased;
+            updateRow.Sidor = BookPages;
+
+            context.Böckers.Update(updateRow);
             context.SaveChanges();
         }
     }
